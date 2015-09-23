@@ -25,5 +25,5 @@ extern int addJob(pid_t a_pid, char* a_cmd);
 extern job_node* removeJobByPID(pid_t a_pid);
 extern int getJobByJobID(int a_job_id);
 
-//#include "Jobs.c"
+#include "Jobs.c"
 #endif

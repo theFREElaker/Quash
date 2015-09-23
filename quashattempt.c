@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <stdbool.h>
 //------------
+
+#include "Jobs.h"
+
 #define BUFMAX 1024
 #define ARGMAX 16
 #define PATHMAX 768
@@ -28,9 +31,9 @@ bool backgroundCheck(char** argBunch)//checks for background char. cleans it, to
 	return(0);
 }
 
-void scrub(char *tbs)
+void scrub(char *tbs, int size)
 {
-	memset(tbs,'\0', sizeof(tbs));
+	memset(tbs,'\0', size);
 }
 
 char** parser(char *worthless)//takes in a whole line, returns several lines of arguments
@@ -45,13 +48,15 @@ char** parser(char *worthless)//takes in a whole line, returns several lines of 
 	for(int i=0;i<ARGMAX;i++){
 		if(tempArg!=NULL){
 			cb = (char*) malloc((strlen(tempArg) * sizeof(char)) + 1);//guess and check til it works
-			scrub(cb);
+			scrub(cb, (strlen(tempArg) * sizeof(char)) + 1);
 			strcpy(cb, tempArg);
 			tbr[i] = cb;
 			cb=NULL;
 			tempArg = strtok(NULL, " \n");//nextarg
 		}else{
-			tbr[i] = '\0';
+			// Sam, compiler was giving me a warning when this was '\0'
+			// Changed it to NULL hopefully works
+			tbr[i] = NULL; 
 		}
 	}
 	return tbr;
@@ -282,8 +287,10 @@ void executivePipedFalseExit(char ***leftArgs, char ***rightArgs,bool leftBack, 
 
 int main()
 {
+	#define SPEC_BUFF (256)
+
 	char cmdline[BUFMAX];
-	scrub(cmdline);
+	scrub(cmdline, BUFMAX);
 
 	while(1){
 		//read in a command
@@ -306,8 +313,8 @@ int main()
 			//do stuff- redirect from some input file, I guess
 			//not tested yet, but I feel pretty confident
 			char* jrr = strtok(cmdline, "<\n");
-			char left[256];
-			char right[256];
+			char left[SPEC_BUFF];
+			char right[SPEC_BUFF];
 			strcpy(left,jrr);
 			jrr = strtok(NULL, "<\n");
 			strcpy(right, jrr);
@@ -318,8 +325,8 @@ int main()
 			//execute false entrance
 			executiveFalseEntrance(&one,bg,right);
 
-			scrub(left);
-			scrub(right);	
+			scrub(left, SPEC_BUFF);
+			scrub(right, SPEC_BUFF);	
 		}else if((!mario)&&(!diffout)){
 			//do stuff- there's no redirect or pipe of any kind
 			//this works
@@ -330,8 +337,8 @@ int main()
 		}else if((!mario)&&(diffout)){
 			//do stuff- redirect out, but no pipe
 			char* jrr = strtok(cmdline, ">\n");
-			char left[256];
-			char right[256];
+			char left[SPEC_BUFF];
+			char right[SPEC_BUFF];
 			strcpy(left,jrr);
 			jrr = strtok(NULL, ">\n");
 			strcpy(right, jrr);
@@ -342,14 +349,14 @@ int main()
 			executiveFalseExit(&one,bg,right);
 
 
-			scrub(left);
-			scrub(right);		
+			scrub(left, SPEC_BUFF);
+			scrub(right, SPEC_BUFF);		
 		}else if((mario)&&(!diffout)){
 			//do stuff- no redirect out, but a pipe is involved
 			//this works
 			char* jrr = strtok(cmdline, "|\n");
-			char left[256];
-			char right[256];
+			char left[SPEC_BUFF];
+			char right[SPEC_BUFF];
 			strcpy(left,jrr);
 			jrr = strtok(NULL, "|\n");
 			strcpy(right, jrr);
@@ -369,23 +376,23 @@ int main()
 			bool bg2 = backgroundCheck(two);
 			executivePlumber(&one,&two,bg1,bg2);
 			
-			scrub(left);
-			scrub(right);
+			scrub(left, SPEC_BUFF);
+			scrub(right, SPEC_BUFF);
 		}else if((mario)&&(diffout)){
 			//do stuff- redirect out AND there's a pipe
 			//this is also untested, but I like it so far
 			//first, treat it just like pipe above:
 			char* jrr = strtok(cmdline, "|\n");
-			char left[256];
-			char right[256];
+			char left[SPEC_BUFF];
+			char right[SPEC_BUFF];
 			strcpy(left,jrr);
 			jrr = strtok(NULL, "|\n");
 			strcpy(right, jrr);
 			//left is left of pipe, right it right of pipe
 			//now token right half for >
 
-			char rl[256];
-			char rr[256];
+			char rl[SPEC_BUFF];
+			char rr[SPEC_BUFF];
 			jrr = strtok(right,">\n");
 			strcpy(rl, jrr);
 			jrr = strtok(NULL,">\n");
@@ -399,16 +406,16 @@ int main()
 			
 			
 			executivePipedFalseExit(&one,&two,bg1,bg2,rr);
-			scrub(left);
-			scrub(right);
-			scrub(rl);
-			scrub(rr);
+			scrub(left, SPEC_BUFF);
+			scrub(right, SPEC_BUFF);
+			scrub(rl, SPEC_BUFF);
+			scrub(rr, SPEC_BUFF);
 		}else{
 		
 			printf("\nThis happened.  Probably a bug, huh?\n");
 		}
 		//cleanliness is next to godliness
-		scrub(cmdline);
+		scrub(cmdline, BUFMAX);
 	}
 	
 	return(0);
