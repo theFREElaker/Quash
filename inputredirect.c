@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include "Jobs.h"
 //------------
@@ -77,20 +78,22 @@ void executive(char ***args, bool background)
 		exit(1);
 	} else if (pid == 0) {
 		if (execvp(**args, *args) < 0) {
-			printf("This sucks\n");
+			// typing $PATH gets to this statement
+			fprintf(stderr, "\nError executing. ERROR #%d: %s\n", errno, strerror(errno));
+			std::cout << "Command: " << **args << std::endl;
 			exit(1);
 		}
-	} else {
 		if (!background){
-			
+			printf("This is not BG\n");
 			while (wait(&stat) != pid){};
 				
 		}else{
+			printf("This is BG\n");
 			// Job should be run in background
 			//addJob(pid, //How to access command);
 			printf("[1] %i\n", pid);
 		}
-	}
+	} 
 	return;
 
 }
