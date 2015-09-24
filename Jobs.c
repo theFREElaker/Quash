@@ -23,8 +23,52 @@ void traverseJobList (void (*func)(job_node*))
 
 extern void killAllJobs()
 {
+
+}
+
+extern void checkBackgroundProcesses()
+{
 	job_node* ptr = job_list_head_ptr;
-	// TODO
+
+	while(ptr != NULL)
+	{
+		int status;
+
+		// Check to see if the job is done yet
+		if(waitpid(ptr->pid, &status, WNOHANG) > 0)
+		{
+			job_node* prevptr = ptr->prev_node;
+			job_node* nextptr = ptr->next_node;
+
+			// Print out job status
+			printf("[%d] %d finished %s\n", ptr->jobID, ptr->pid, ptr->command);
+			free(ptr->command);
+
+			// The job is finished so clear it and move on
+			if(prevptr != NULL)
+			{
+				prevptr->next_node = nextptr;
+			}
+			if(nextptr != NULL)
+			{
+				nextptr->next_node = prevptr;
+			}
+			if(ptr == job_list_tail_ptr)
+			{
+				job_list_tail_ptr = ptr->prev_node;
+			}
+			if(ptr == job_list_head_ptr)
+			{
+				job_list_head_ptr = ptr->next_node;
+			}
+			free(ptr);
+			ptr = nextptr;
+		}
+		else
+		{
+			ptr = ptr->next_node;
+		}
+	}
 }
 
 // Creates a new node inserts it into the list of jobs
@@ -168,7 +212,12 @@ extern int getJobByJobID(int a_job_id)
 
 void printList(job_node* ptr)
 {
-	fprintf(stdout, "[%d] %d command: %s\n", ptr->jobID, ptr->pid, ptr->command);
+	fprintf(stdout, "[%d] %d %s\n", ptr->jobID, ptr->pid, ptr->command);
+}
+
+void PrintAllJobs()
+{
+	traverseJobList(printList);
 }
 
 /*

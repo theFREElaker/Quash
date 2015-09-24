@@ -20,10 +20,12 @@ typedef struct __job_node_t
 }job_node;
 
 extern void traverseJobList(void (*func)(job_node*));
+extern void checkBackgroundProcesses();
 extern void killAllJobs();
 extern int addJob(pid_t a_pid, char* a_cmd);
 extern job_node* removeJobByPID(pid_t a_pid);
 extern int getJobByJobID(int a_job_id);
+extern void PrintAllJobs();
 
 #include "Jobs.c"
 #endif
