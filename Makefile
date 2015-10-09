@@ -1,5 +1,5 @@
-quash: inputredirect.c Jobs.c Jobs.h
-	gcc -g  inputredirect.c -o quash
+quash: quash.c Jobs.c Jobs.h
+	gcc -g  quash.c -o quash
 
 clean:
 	rm quash
